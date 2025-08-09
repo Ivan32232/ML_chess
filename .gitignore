@@ -1,2 +1,4 @@
 test.py
 .mlenv
+board.pgn
+__pycache__
