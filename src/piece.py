@@ -5,7 +5,7 @@ class Piece:
         self.name = name
         self.color = color
 
-        value_sign = 1 if color == "White" else -1
+        value_sign = 1 if color == "white" else -1
         self.value = value * value_sign
         self.moves = []
         self.moved = False
@@ -19,6 +19,9 @@ class Piece:
         )
     def add_move(self, move):
         self.moves.append(move)
+
+    def clear_moves(self):
+        self.moves = []
 
 class Pawn(Piece):
     def __init__(self, color):
