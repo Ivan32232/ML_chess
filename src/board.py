@@ -7,6 +7,7 @@ class Board:
     def __init__(self):
         self.squares = [[0, 0, 0, 0, 0, 0, 0, 0,] for col in range(COLS)]
         self.last_move = None
+        self.promotion_pending = None  # Будет содержать информацию о промоции
         self._create()
         self._add_pieces("white")
         self._add_pieces('black')
@@ -21,7 +22,13 @@ class Board:
 
         # pawn promotion
         if isinstance(piece, Pawn):
-            self.check_promotion(piece, final)
+            if self.check_promotion_needed(piece, final):
+                self.promotion_pending = {
+                    'piece': piece,
+                    'position': final,
+                    'color': piece.color
+                }
+                return True  # Возвращаем True, чтобы указать, что нужна промоция
 
         # move
         piece.moved = True
@@ -31,14 +38,40 @@ class Board:
 
         # set last move
         self.last_move = move
+        return False  # Промоция не нужна
 
+    def check_promotion_needed(self, piece, final):
+        return final.row == 0 or final.row == 7
+
+    def promote_pawn(self, piece_type):
+        """Выполняет промоцию пешки в выбранную фигуру"""
+        if not self.promotion_pending:
+            return
+        
+        position = self.promotion_pending['position']
+        color = self.promotion_pending['color']
+        
+        # Создаем новую фигуру в зависимости от выбора
+        if piece_type == 'queen':
+            new_piece = Queen(color)
+        elif piece_type == 'rook':
+            new_piece = Rook(color)
+        elif piece_type == 'bishop':
+            new_piece = Bishop(color)
+        elif piece_type == 'knight':
+            new_piece = Knight(color)
+        else:
+            new_piece = Queen(color)  # По умолчанию королева
+        
+        # Помещаем новую фигуру на доску
+        self.squares[position.row][position.col].piece = new_piece
+        new_piece.moved = True
+        
+        # Очищаем состояние промоции
+        self.promotion_pending = None
 
     def valid_move(self, piece, move):
         return move in piece.moves
-
-    def check_promotion(self, piece, final):
-        if final.row == 0 or final.row == 7:
-            self.squares[final.row][final.col].piece = Queen(piece.color)
 
     def calc_moves(self, piece, row, col):
         '''
@@ -222,6 +255,3 @@ class Board:
 
         #queens
         self.squares[row_other][3] = Square(row_other, 3, Queen(color))
-
-
-

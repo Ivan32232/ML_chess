@@ -31,9 +31,21 @@ class Main:
             if dragger.dragging:
                 dragger.update_blit(screen)
 
+            # show promotion menu
+            if board.promotion_pending:
+                game.show_promotion_menu(screen)
+
             for event in pygame.event.get():
                 # click
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    # handle click on promotion choice menu
+                    if board.promotion_pending:
+                        selected_piece = game.handle_promotion_click(event.pos)
+                        if selected_piece:
+                            board.promote_pawn(selected_piece)
+                            game.next_turn()
+                        continue
+
                     dragger.update_mouse(event.pos)
                     
                     clicked_row = dragger.mouseY // SQSIZE
@@ -55,6 +67,10 @@ class Main:
 
                 # mouse motion 
                 elif event.type == pygame.MOUSEMOTION:
+                    # ignore mouse motion
+                    if board.promotion_pending:
+                        continue
+
                     motion_row = event.pos[1] // SQSIZE
                     motion_col = event.pos[0] // SQSIZE
                     game.set_hover(motion_row, motion_col)
@@ -71,6 +87,10 @@ class Main:
 
                 # click release
                 elif event.type == pygame.MOUSEBUTTONUP:
+                    # ignore mouse motion if promotion menu choice 
+                    if board.promotion_pending:
+                        continue
+
                     if dragger.dragging:
                         dragger.update_mouse(event.pos)
                         released_row = dragger.mouseY // SQSIZE
@@ -83,13 +103,15 @@ class Main:
 
                         # valid move ?
                         if board.valid_move(dragger.piece, move):
-                            board.move(dragger.piece, move)
+                            promotion_needed = board.move(dragger.piece, move)
                             # draw show methods
                             game.show_bg(screen)
                             game.show_last_move(screen)
                             game.show_pieces(screen)
-                            # next turn
-                            game.next_turn()
+                            
+                            # if no promotion next turn 
+                            if not promotion_needed:
+                                game.next_turn()
                     
                     dragger.undrag_piece()
 
