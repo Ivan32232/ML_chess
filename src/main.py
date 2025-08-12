@@ -17,7 +17,7 @@ class Main:
     def mainloop(self):
         game = self.game
         screen = self.screen
-        board = self.game.board
+        board = self.game.board 
         dragger = self.game.dragger
 
         while True:
@@ -56,7 +56,7 @@ class Main:
                         piece = board.squares[clicked_row][clicked_col].piece
                         # valid piece color ?
                         if piece.color == game.next_player:
-                            board.calc_moves(piece, clicked_row, clicked_col)
+                            board.calc_moves(piece, clicked_row, clicked_col, bool=True)
                             dragger.save_initial(event.pos)
                             dragger.drag_piece(piece)
                             # show methods
@@ -104,6 +104,9 @@ class Main:
                         # valid move ?
                         if board.valid_move(dragger.piece, move):
                             promotion_needed = board.move(dragger.piece, move)
+
+                            board.set_true_en_passant(dragger.piece)
+
                             # draw show methods
                             game.show_bg(screen)
                             game.show_last_move(screen)
