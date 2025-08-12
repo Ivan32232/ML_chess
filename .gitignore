@@ -39,3 +39,9 @@ dist/
 *.egg-info/
 # Logs
 *.log
+
+# локальная среда
+.mlenv/
+
+# локальная среда
+.mlenv/
