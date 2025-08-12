@@ -11,7 +11,7 @@ class Game:
         self.dragger = Dragger()
         self.promotion_menu = False
 
-    def show_bg(self, surface):  # this is going to be a show methods 
+    def show_bg(self, surface):  # this is going to be a show methods
         for row in range(ROWS):
             for col in range(COLS):
                 if (row + col) % 2 == 0:
@@ -94,14 +94,14 @@ class Game:
         pygame.draw.rect(surface, (0, 0, 0), (menu_x, menu_y, menu_width, menu_height), 3)
 
         # Title
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, 30)
         text = font.render("Выберите фигуру для промоции:", True, (0, 0, 0))
         text_rect = text.get_rect(center=(menu_x + menu_width // 2, menu_y + 30))
         surface.blit(text, text_rect)
 
         # pieces variants choice
         pieces = ['queen', 'rook', 'bishop', 'knight']
-        piece_size = 60
+        piece_size = 70
         spacing = (menu_width - 4 * piece_size) // 5
         color = self.board.promotion_pending['color']
 
