@@ -2,3 +2,21 @@ test.py
 .mlenv
 board.pgn
 __pycache__
+# macOS
+.DS_Store
+# IDE
+.vscode/
+# venv
+.venv/
+venv/
+env/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+# Build
+build/
+dist/
+*.egg-info/
+# Logs
+*.log
