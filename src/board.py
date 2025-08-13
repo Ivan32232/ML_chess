@@ -9,6 +9,7 @@ class Board:
         self.squares = [[0, 0, 0, 0, 0, 0, 0, 0,] for col in range(COLS)]
         self.last_move = None
         self.promotion_pending = None  # info о промоции
+        self.game_over = None  # None, 'white', 'black', 'stalemate'
         self._create()
         self._add_pieces("white")
         self._add_pieces('black')
@@ -40,7 +41,7 @@ class Board:
                 }
                 return True  # Возвращаем True, чтобы указать, что нужна промоция
 
-        # king castling - ИСПРАВЛЕНО
+        # king castling - ИСПРАВЛЕНИ
         if isinstance(piece, King):
             if self.casteling(initial, final):
                 diff = final.col - initial.col
@@ -70,7 +71,6 @@ class Board:
         return abs(initial.col - final.col) == 2
 
     def promote_pawn(self, piece_type):
-        """Выполняет промоцию пешки в выбранную фигуру"""
         if not self.promotion_pending:
             return
         
@@ -96,6 +96,69 @@ class Board:
         # Очищаем состояние промоции
         self.promotion_pending = None
 
+    def find_king(self, color):
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.squares[row][col].piece
+                if isinstance(piece, King) and piece.color == color:
+                    return (row, col)
+        return None
+
+    def is_in_check(self, color):
+        king_pos = self.find_king(color)
+        if not king_pos:
+            return False
+        
+        king_row, king_col = king_pos
+        
+        # Проверяем все фигуры противника
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.squares[row][col].piece
+                if piece and piece.color != color:
+                    # Вычисляем возможные ходы без проверки шаха
+                    self.calc_moves(piece, row, col, bool=False)
+                    for move in piece.moves:
+                        if move.final.row == king_row and move.final.col == king_col:
+                            return True
+        return False
+
+    def get_all_possible_moves(self, color):
+        moves = []
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.squares[row][col].piece
+                if piece and piece.color == color:
+                    self.calc_moves(piece, row, col, bool=True)
+                    moves.extend(piece.moves)
+        return moves
+
+    def is_checkmate(self, color):
+        if not self.is_in_check(color):
+            return False
+        
+        moves = self.get_all_possible_moves(color)
+        return len(moves) == 0
+
+    def is_stalemate(self, color):
+        if self.is_in_check(color):
+            return False
+        
+        moves = self.get_all_possible_moves(color)
+        return len(moves) == 0
+
+    def check_game_over(self, current_player):
+        if self.is_checkmate(current_player):
+            # Мат - выигрывает противник
+            winner = "black" if current_player == "white" else "white"
+            self.game_over = winner
+            return True
+        elif self.is_stalemate(current_player):
+            # Пат - ничья
+            self.game_over = "stalemate"
+            return True
+        return False
+
     def valid_move(self, piece, move):
         return move in piece.moves
     
@@ -118,7 +181,7 @@ class Board:
                             pawn.en_passant = False
 
     def in_check(self, piece, move):
-        # ИСПРАВЛЕНО: Проверка валидности координат
+        # ИСПРАВЛЕНИ: Проверка валидности координат
         if not Square.inrange(move.initial.row, move.initial.col):
             return False
         if not Square.inrange(move.final.row, move.final.col):

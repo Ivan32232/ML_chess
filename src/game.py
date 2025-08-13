@@ -17,7 +17,7 @@ class Game:
                 if (row + col) % 2 == 0:
                     color = (234, 235, 200) # light green
                 else:
-                    color = (199, 154, 88) # dark green
+                    color = (119, 154, 88) # dark green
                 
                 rect = (col * SQSIZE, row * SQSIZE, SQSIZE, SQSIZE)
 
@@ -124,6 +124,58 @@ class Game:
                 text_rect = text.get_rect(center=(x + piece_size // 2, y + piece_size // 2))
                 surface.blit(text, text_rect)
 
+    def show_game_over_menu(self, surface):
+        """Меню окончания игры (мат/пат)"""
+        if not self.board.game_over:
+            return
+
+        # Полупрозрачный фон
+        overlay = pygame.Surface((WIDTH, HIGHT))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+        surface.blit(overlay, (0, 0))
+
+        # Размеры меню
+        menu_width = 500
+        menu_height = 200
+        menu_x = (WIDTH - menu_width) // 2
+        menu_y = (HIGHT - menu_height) // 2
+
+        # Фон меню
+        pygame.draw.rect(surface, (240, 240, 240), (menu_x, menu_y, menu_width, menu_height))
+        pygame.draw.rect(surface, (0, 0, 0), (menu_x, menu_y, menu_width, menu_height), 4)
+
+        # Определяем текст в зависимости от результата
+        font_title = pygame.font.Font(None, 48)
+        font_subtitle = pygame.font.Font(None, 32)
+        
+        if self.board.game_over == "stalemate":
+            title_text = "ПАТ!"
+            subtitle_text = "Ничья"
+            title_color = (255, 165, 0)  # Оранжевый для пата
+        else:
+            winner = "Белые" if self.board.game_over == "white" else "Чёрные"
+            title_text = "ШАХМАТ И МАТ!"
+            subtitle_text = f"Выиграли {winner}"
+            title_color = (220, 20, 60) if self.board.game_over == "white" else (34, 139, 34)
+
+        # Отображаем заголовок
+        title_surface = font_title.render(title_text, True, title_color)
+        title_rect = title_surface.get_rect(center=(menu_x + menu_width // 2, menu_y + 50))
+        surface.blit(title_surface, title_rect)
+
+        # Отображаем подзаголовок
+        subtitle_surface = font_subtitle.render(subtitle_text, True, (0, 0, 0))
+        subtitle_rect = subtitle_surface.get_rect(center=(menu_x + menu_width // 2, menu_y + 100))
+        surface.blit(subtitle_surface, subtitle_rect)
+
+        # Инструкция для перезапуска
+        restart_font = pygame.font.Font(None, 28)
+        restart_text = 'Нажмите "R" для перезапуска игры'
+        restart_surface = restart_font.render(restart_text, True, (100, 100, 100))
+        restart_rect = restart_surface.get_rect(center=(menu_x + menu_width // 2, menu_y + 150))
+        surface.blit(restart_surface, restart_rect)
+
     def handle_promotion_click(self, pos):
         """hanlde click on piece in promotion choice"""
         if not self.board.promotion_pending:
@@ -135,10 +187,10 @@ class Game:
         menu_y = (HIGHT - menu_height) // 2
 
         if (menu_x <= pos[0] <= menu_x + menu_width and 
-            menu_y + 70 <= pos[1] <= menu_y + 70 + 60):
+            menu_y + 70 <= pos[1] <= menu_y + 70 + 70):
             
             pieces = ['queen', 'rook', 'bishop', 'knight']
-            piece_size = 60
+            piece_size = 70
             spacing = (menu_width - 4 * piece_size) // 5
             
             for i, piece_name in enumerate(pieces):

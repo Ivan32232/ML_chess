@@ -35,15 +35,25 @@ class Main:
             if board.promotion_pending:
                 game.show_promotion_menu(screen)
 
+            # show game over menu
+            if board.game_over:
+                game.show_game_over_menu(screen)
+
             for event in pygame.event.get():
                 # click
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    # ignore clicks if game is over
+                    if board.game_over:
+                        continue
+
                     # handle click on promotion choice menu
                     if board.promotion_pending:
                         selected_piece = game.handle_promotion_click(event.pos)
                         if selected_piece:
                             board.promote_pawn(selected_piece)
-                            game.next_turn()
+                            # После промоции проверяем окончание игры
+                            if not board.check_game_over(game.next_player):
+                                game.next_turn()
                         continue
 
                     dragger.update_mouse(event.pos)
@@ -67,8 +77,8 @@ class Main:
 
                 # mouse motion 
                 elif event.type == pygame.MOUSEMOTION:
-                    # ignore mouse motion
-                    if board.promotion_pending:
+                    # ignore mouse motion if game is over or promotion menu is active
+                    if board.game_over or board.promotion_pending:
                         continue
 
                     motion_row = event.pos[1] // SQSIZE
@@ -87,8 +97,8 @@ class Main:
 
                 # click release
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    # ignore mouse motion if promotion menu choice 
-                    if board.promotion_pending:
+                    # ignore mouse release if game is over or promotion menu is active
+                    if board.game_over or board.promotion_pending:
                         continue
 
                     if dragger.dragging:
@@ -112,9 +122,12 @@ class Main:
                             game.show_last_move(screen)
                             game.show_pieces(screen)
                             
-                            # if no promotion next turn 
+                            # if no promotion, check for game over and next turn 
                             if not promotion_needed:
+                                # Сначала меняем игрока
                                 game.next_turn()
+                                # Затем проверяем мат/пат для нового игрока
+                                board.check_game_over(game.next_player)
                     
                     dragger.undrag_piece()
 
